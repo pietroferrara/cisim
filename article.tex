@@ -1,0 +1,1068 @@
+\documentclass{llncs}
+
+
+
+\usepackage{times}
+
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{mathrsfs}
+\usepackage[normalem]{ulem}
+\usepackage{dsfont}
+\usepackage{pxfonts}
+\usepackage{textcomp}
+\usepackage[all]{xy}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{wasysym}
+\usepackage{longtable}
+\usepackage{color}
+\usepackage{multirow}
+\usepackage{float}
+
+\lstset{
+numbers=left,
+numberstyle=\tiny,
+language={Java},
+mathescape=true,
+flexiblecolumns=true,
+morekeywords={def,Int,call,method,var,assert,share,unshare,acquire,release,fork,join,free,invariant,requires,ensures,acc,rd,old},
+basicstyle=\sffamily\scriptsize,
+moredelim=[is][\itshape]{@}{@},
+stepnumber=1,
+numbersep=2pt} 
+
+%\input{pietromacro}
+
+%\newcommand{\omer}[1]{{\color{black}#1}}
+%\newcommand{\keywords}[1]{\par\addvspace\baselineskip
+%\noindent\keywordname\enspace\ignorespaces#1}
+
+
+\newcommand{\labels}{\ensuremath{\mathsf{Lab}}}
+\newcommand{\edges}{\ensuremath{\mathsf{Edg}}}
+\newcommand{\actions}{\ensuremath{\mathsf{Act}}}
+\newcommand{\cfg}{\ensuremath{\mathsf{CFG}}}
+\newcommand{\getaction}[2]{\ensuremath{\cfunction{getAct(#1, #2)}}}
+\newcommand{\replace}[3]{\ensuremath{\cfunction{rep}(#1, #2, #3)}}
+\newcommand{\extractstep}[3]{\ensuremath{\cfunction{extractStep}(#1, #2, #3)}}
+
+\newcommand{\naturalnumbers}{\ensuremath{\mathbb{N}}}
+
+\newcommand{\parts}[1]{\ensuremath{\wp(#1)}}
+\newcommand{\dom}[1]{\ensuremath{\cfunction{dom}(#1)}}
+\newcommand{\statement}[1]{\ensuremath{\mathtt{#1}}}
+\newcommand{\funzione}[2]{\ensuremath{#1 \rightarrow#2}}
+\newcommand{\trace}[1]{\ensuremath{#1^{\vec{+}}}}
+\newcommand{\pair}[2]{\ensuremath{#1 \times #2}}
+\newcommand{\triple}[3]{\ensuremath{#1 \times #2 \times #3}}
+\newcommand{\cartesianproduct}[2]{\ensuremath{#1 \times #2}}
+\newcommand{\reducedproduct}[2]{\ensuremath{#1 \varotimes #2}}
+\newcommand{\true}{\cel{true}}
+\newcommand{\false}{\cel{false}}
+\newcommand{\reducefunction}{\afunction{red}}
+\newcommand{\sem}[1]{\ensuremath{\llbracket \mathtt{#1} \rrbracket}}
+\newcommand{\semanticanome}[1]{\ensuremath{\mathbb{#1}}}
+\newcommand{\semantica}[2]{\ensuremath{\semanticanome{#1}\sem{#2}}}
+\newcommand{\bigdivision}[2]{\frac{\displaystyle #1}{\displaystyle #2}}
+
+\newcommand{\statements}{\cset{St}}
+\newcommand{\states}{\Sigma}
+\newcommand{\badtraces}{\cset{BadTraces}}
+\newcommand{\goodtraces}{\cset{GoodTraces}}
+\newcommand{\nextStatement}[2]{\ensuremath{\cfunction{nextSt}(#1, #2)}}
+\newcommand{\lastLabel}[2]{\ensuremath{\cfunction{lastLab}(#1, #2)}}
+\newcommand{\projectTrace}[1]{\ensuremath{\pi_\labels(#1)}}
+\newcommand{\isBad}[1]{\ensuremath{\cfunction{isBad}(#1)}}
+\newcommand{\getTransactionPoints}[1]{\ensuremath{\cfunction{transPP}(#1)}}
+\newcommand{\indexes}[2]{\ensuremath{\cfunction{indexes}(#1, #2)}}
+\newcommand{\observe}[1]{\ensuremath{\cfunction{observe}(#1)}}
+
+
+%Concreto
+
+%Dominio e semantica concrete
+\newcommand{\cset}[1]{\ensuremath{\mathsf{#1}}}
+\newcommand{\cstates}{\ensuremath{\cset{\states}}}
+\newcommand{\cstatesmemory}{\ensuremath{\cset{\states_m}}}
+\newcommand{\ctrace}[1]{\ensuremath{\trace{{\cset{#1}}}}}
+\newcommand{\cel}[1]{\ensuremath{\mathsf{#1}}}
+\newcommand{\cjoin}{\ensuremath{\cup}}
+\newcommand{\cmeet}{\ensuremath{\cap}}
+\newcommand{\corder}{\ensuremath{\subseteq}}
+\newcommand{\cbot}{\ensuremath{\emptyset}}
+\newcommand{\ctop}[1]{\cset{#1}}
+\newcommand{\cfunction}[1]{\ensuremath{\mathit{#1}}}
+\newcommand{\csemantics}[2]{\ensuremath{\semantica{#1}{#2}}}
+
+%Astratto
+
+%Dominio e semantica astratte
+\newcommand{\aset}[1]{\ensuremath{#1^a}}
+\newcommand{\astates}{\aset{\Sigma}}
+\newcommand{\ael}[1]{\aset{#1}}
+
+%Nuovi comandi
+\newcommand{\omer}[1]{{\color{black}#1}}
+\newcommand{\keywords}[1]{\par\addvspace\baselineskip\noindent\keywordname\enspace\ignorespaces#1}
+\newcommand{\blangle}{\big\langle}
+\newcommand{\brangle}{\big\rangle}
+\newcommand{\notegian}[1]{\textbf{(NOTE: #1)}}
+%\newtheorem{definition}{Definition}
+%\newtheorem{theorem}{Theorem}
+
+
+
+\begin{document}
+
+\mainmatter
+
+\title{Privacy Analysis of Android Apps:\\ Implicit Flows and Quantitative Analysis}
+
+
+
+\author{ Gianluca Barbon\inst{1}  \and Agostino Cortesi\inst{1} \and  \\ Pietro Ferrara\inst{2} \and Marco Pistoia\inst{2} \and Omer Tripp\inst{2}}
+
+\institute{ Universit\`{a} Ca' Foscari Venezia, Italy \and IBM Thomas J.Watson Research Center, USA }
+
+
+\maketitle
+
+
+\begin{abstract}
+A static analysis  for the verification of privacy policy compliance by mobile applications is presented, within the Abstract Interpretation  framework, as a a twofold extension of the work in ~\cite{Cortesi15}. First, the concrete and abstract semantics are extended to properly deal with implicit information flows. Second, a quantitative over approximation of privacy information leakage is introduced, yielding to a combination of qualitative and quantitative analyses.  
+\end{abstract}
+
+
+
+\section{Introduction}
+
+\noindent Security issues are increasing in mobile devices world, in particular in the Android environment. This is partially due to the lack of control over applications that instead is present in other environments. Moreover, a lot of applications and libraries, also popular ones, make use of user confidential data, without caring about user awareness. Mobile security is also becoming an important problem in the business context, where firms allow the use of company applications in  the employee's personal device, increasing the risk of leakage of confidential business data. There is the need to formally verify the behaviour of mobile applications, and to assess (and possibly limit) the quantity of data they release. 
+Of course, a complete absence of data leakage of data is a non-sense, because this would often compromise the functionalities of the device. On the other hand, we would like to set suitable privacy policies as constraints on levels of data emission, and give the user a better awareness of the direct and indirect actual information flow concerning her/his personal data.
+
+In this context, current research follows two main approaches: a statistical one~\cite{McCamant06,McCamant08,Lowe02} and a language based one (taint analysis)~\cite{Sridharan11,Tripp14,Tripp09,HS09,SG07,Arzt14}. Both approaches suffer some weaknesses: the former as it does not fit well for qualitative analysis, while the latter as it is too strict, due to the fact that the non-interference notion~\cite{DD76} yields many false positives which limit the effectiveness of the analysis. 
+
+In this paper we present an extension of the work in~\cite{Cortesi15}. The novelty is twofold. First, we investigate also implicit flows, and second, we relate explicit and implicit information flow to a quantitative notion of information leakage. Our contribution is an instance of the abstract interpretation approach. The advantage of such method is that it supplies a general abstraction of all the possible executions of a given program. Following the abstract interpretation framework ~\cite{CousotCousot77-1}, we design an enhanced concrete semantics that formalizes how the expressions generated by a program execution maintain footprints of (possibly confidential) data stored in the local data-store of the mobile device. Once the concrete semantics is formalized, we show how to abstract it properly in order to make the analysis computable.
+
+This work leads to the definition of a framework that merges a quantitative and a qualitative approach, by taking advantage of the respective strengths. We exploited the evaluation of single operators for the former approach and the collection of quantities of released information for the latter. Last, but certainly not least, the definition of this method has revealed the important role of the implicit flow in the leakage of secret variables. We evaluated the effectiveness of this framework over some benchmark examples.
+
+The paper is structured as follows. After a brief introduction that describes related research and fundamental notions in Section 2, in Section 3 the semantics shown in the Cortesi et al.~\cite{Cortesi15} work are recalled and extended in order to capture  implicit flows too. Section 4 introduces the new quantitative approach that is added to the semantics described in the previous Sections.  Section 5 introduces an abstraction of the quantitative analysis.  Finally, in Section 6 a few significant examples of real working applications are presented and analyzed. Section 7 concludes.
+
+
+\section{Background}
+
+This Section introduces some important notions that will be used throughout the rest of the paper, and briefly describes the current research in this (and related) field.
+
+\subsubsection{Implicit Flows.}
+Implicit flows were described by Denning~\cite{DD76} in 1976. Implicit Flows have origins from the so called control statements, like \texttt{if} and \texttt{while} statements, where they are generated by their conditional expression. For instance, consider the following example:
+\begin{lstlisting}[numbers=none]
+if b then x = 0 else x = 1;
+\end{lstlisting}
+This branch is telling something about the content of the conditional expression. In fact, even if the final value of  $x$ does not allows to directly recover the value of $b$, the latter affect the value of $x$, and an indirect information flow occurs from $b$ to $x$. Of course, Implicit Flows may be  malicious \cite{Russo09implicitflows}. 
+
+\subsubsection{Quantitative Approaches.}
+A quantitative approach is based on the analysis of the quantity of leaked information. In \cite{McCamant08} a new technique is proposed for determining the quantity of sensitive information that is revealed to public. The main idea presented by the authors consists in computing a maximum flow between the program inputs and the outputs, and by setting a limit on the maximum quantity of information revealed. The information flow is  measured using a sort of network flow capacity, where the maximum rate of an imaginary fluid into this network represents the maximum extent of revealed confidential information. This method requires a dynamic approach in order to construct the graph, by  performing multiple runs of the target program. 
+
+\subsubsection{Quantitative value expressed as bits.}
+McCamant et al. \cite{McCamant06,McCamant08} introduced a quantity concept in order to measure bits of information that can be released by the observation of a specific execution of a program.  One of the first attempts to quantify information flow is the one of Lowe \cite{Lowe02}. The author described quantity as number of bits, and defined the information flow as information passing between an high level user and a low level user through a \emph{covert channel}. An interesting feature presented in this work consists in the assignment of \emph{1 bit} of quantity also with absence of information flow. This means that the author considers the absence of information as having value $1\ bit$. Finally they also introduce a time notion in the flow analysis.
+Another interesting approach is the one by Clark et al.\cite{Clark04,city191}.  First, they analyse $k\ bit$ variables, where $2^k$ are the values that can be represented from such variables. Second, they relate the maximum content of a variable to its data type, and they consider this as the possible quantity of leakage. Finally, they define the difference between the quantity of information of a confidential input and the amount of leaked information.
+
+\subsubsection{Security in Mobile Environments.}
+Nowadays smartphones are used to store, modify and collect private and confidential data, for instance location data, or phone identifier. At the same time, a lot of malicious applications able to stole data or to track users exist. Mobile operating systems are not able to grant to users an appropriate control over confidential data and on how applications manage such data~\cite{Enck:2014:TIT:2642648.2619091}. These features make these platforms a potential target for attackers. An evolution of threats in mobile environments has been stressed also by the MacAfee Labs Threats Report~\cite{McAfee_threat}; in particular they underline the existence of untrusted marketplaces and the increasing diffusion of open-source and commercial mobile malware source code, that facilitate the creation of such threats by unskilled attackers.
+Among mobile operating systems, Android has become the most prevalent one~\cite{idc_phonetrack}, thus becoming target of various threats. This mobile environment present different vulnerabilities. First, the lack of common definitions for securities and the high volume of available applications that guarantees the diffusion of malicious programs~\cite{Enck11astudy}. Second, lots of applications make use of private information, like the \texttt{IMEI} (International Mobile Station Equipment Identity), and of advertising and analytic libraries, that sends user data to remote servers for profiling. Third, the opportunity to install also applications coming from untrusted marketplaces makes the verification of these applications harder~\cite{TUD-CS-2014-0849}. Last, but not least, even if Android requests to grant permission in order to install an application, this kind of control is not sufficient to avoid undesirable behaviour, because restrictions are not fine-grained~\cite{fritz2013highly, Hornyack:2011:TAD:2046707.2046780}. Notice that current approaches that tend to mitigate unauthorized flow are affected by issues deriving from the use of a limited set of policies~\cite{TUD-CS-2014-0849}.
+
+\subsubsection{Confidentiality Analysis in Mobile Environments.}
+The importance of confidentiality analysis is growing in the last years, especially in the mobile environments area. In this field two main approaches can be found, that's to say dynamic and static analysis methods. Among the works that use the former method we can find those regarding the evaluation of permission-hungry mobile applications ~\cite{TUD-CS-2014-0849, Arzt:2014:FPC:2666356.2594299}. In particular, the work of Enck et al.~\cite{Enck:2014:TIT:2642648.2619091} presents TaintDroid, a tool that monitors sensitive data by using real time tracking, avoiding the needing to get access to the applications source code. The main idea consists in tracking sensitive data that flows through systems interfaces, used by applications to get access to local data. Anyway this approach presents some lacks: for instance, it does not allow the tracking of control flows, and generates false positives. Another approach is the one of Hornyack et al. with AppFence~\cite{Hornyack:2011:TAD:2046707.2046780}, that imposes privacy controls by retrofitting the Android environment, without the need to modify applications.
+However, dynamic approaches present some weaknesses. First, they fail to discover some malicious behaviour, because applications have learned to recognize analysis during execution~\cite{fritz2013highly}. Second, the majority of dynamic approaches uses coarse-grained approximations that lead to false alarms and also missed leaks~\cite{Arzt:2014:FPC:2666356.2594299}, while on the contrary static ones are able to discover potential leaks before the execution of the analysed application.
+
+
+\section{Collecting Semantics}
+
+In this section we introduce the collecting semantics, that consists in the first fundamental step of our framework design. We define here the domains, syntax and expressions. Finally, some particular problems that concerns control statements are discussed.
+
+\subsection{Syntax}
+As in \cite{Cortesi15}, we focus only on three types of data: strings ($s \in \mathbb{S}$), integers ($n \in \mathbb{Z}$) and boolean ($b \in \mathbb{B}$). Corresponding expressions are denoted by: \emph{sexp} for strings, \emph{nexp} for integers, and \emph{bexp} for boolean. Moreover a type of labels $\ell$ is defined in order to represent data-store entries; the corresponding expressions are denoted by \emph{lexp}. 
+For instance, string expressions are defined by: $sexp ::= s\ |\ sexp_{1}\ \circ  sexp_{2} \ |\   encrypt(sexp,k) \ |\  sub(sexp,nexp_1,nexp_2)\ |\ \allowbreak hash(sexp)\ |\ read(lexp)$, where $\circ$ represents concatenation, $encrypt$ the encryption of a string with a key $k$, $sub$ the computation of the substring between two letter positions, $hash$ the computation of the hash value and $read$ the function that returns the value related to the data-store that corresponds to the given label. 
+
+\subsection{Domain}
+In  \cite{Cortesi15} a class of expressions called atomic data expressions, referenced as \emph{adexp}, is introduced  in order to keep track of the data sources used to obtain a specific value. The set of atomic data expressions is defined by: $\mathbb{D}=\{\langle \ell_i,\ L_i\rangle :\ i \in I \subseteq \mathbb{N}, \ell_i \in \texttt{Lab}, L_i \subseteq \wp(\texttt{Op} \times \texttt{Lab})\} $, where \texttt{Lab} is the set of labels and \texttt{Op} is the set of operators. 
+
+Specifically, an atomic data expressions \emph{adexp} is a set of elements $\langle \ell_i, \{(op_j,l'_j):j\in J\} \rangle$. This formula states that the value of the associated expression is obtained by the combination of the datum that corresponds to label $\ell_i$ with data corresponding to labels $\ell'_j$ using corresponding operators $op_j$.\\
+
+
+An environment relates variables to their value and to their atomic data expression:   $\Sigma=D\times V$, where $D: \mathbf{Var} \longrightarrow \wp(\mathbb{D}) $ maps local variables in $\mathbf{Var}$ to a corresponding \emph{adexp} and $V: \mathbf{Var} \longrightarrow (\mathbb{Z}\cup\mathbb{S})$ is the usual evaluation function that is used to track value information. The special symbol $\star$ is used to specify data coming from the user input and from the constants of the program, in order to distinguish them from atomic data that come from the data-store. The latter are defined through the concept of \emph{concrete data-store} $C$ represented by a set $\{\langle \ell_i,\ \emptyset\rangle :\ i \in I\} \subseteq \mathbb{D}\ such\ that\ \forall i,j \in I:i\neq j \Rightarrow \ell_i\neq \ell_j, and\ \ell_i \neq \star $.\\ 
+
+\subsection{Collecting Semantics}
+We extend the notion of atomic data expression in order to collect also implicit flow, generated by \emph{if} and \emph{while} statements. This flow is treated in the same way as the explicit flow, so we collect the boolean expression (\emph{bexp}) of a conditional or loop statement and we consider it as an \emph{adexp}, with its operators and sources.
+
+\begin{definition}[Extended Atomic Data Expressions]\label{ext_conc_ad_exp}
+We redefine the set of atomic data expression as:
+\begin{align*}
+\mathds{D}= \blangle\{\langle \ell_i, L_i\rangle : i \in I\}, \{\langle \ell_j, L_j\rangle : j \in J\} \brangle
+\end{align*}
+where $L \subseteq \wp(\texttt{Op} \times \texttt{Lab})$.
+\end{definition}
+
+An extended atomic data expression can be seen as a pair of two atomic data expressions, where the second one refers to the implicit flows (notice that also a boolean or relational operator may appear). 
+\begin{center}
+$d = \langle d^e,\ d^i\rangle$
+\end{center}
+Where $d^e$ and $d^i$ correspond to the explicit and implicit flows respectively. In this way we are considering also the boolean operators in the boolean expression as operators of an adexp. 
+
+Consider the conditional statement:  \textbf{if} \textit{expression} \textbf{then} $x = case_1$ \textbf{else} $x = case_2$.  We can see each expression as a combination of explicit and implicit flow:
+\[
+\begin{array}{lcl}
+d_{if\ cond} & = & \langle d^e ,\ d^i \rangle\\
+d_{case_1} & = & \langle d_{case_1}^e ,\ d_{case_1}^i \rangle\\
+d_{case_2} & = & \langle d_{case_2}^e ,\ d_{case_2}^i \rangle\\
+\end{array}
+\]
+Notice that the $d^i$ in $case_1$ and $case_2$ expresses only the implicit flow generated in the scope of the two cases, but it does not include the implicit flow that comes from the \texttt{if} statement. So if the $case_1$ is chosen, we will proceed in the following way:
+\begin{center}
+$d_{result} = \blangle d_{case_1}^e,\ \{d_{case_1}^i \cup d_{if}^e \cup d_{if}^i\}\brangle$
+\end{center}
+where $d_{if}^e$ and $d_{if}^i$ represent the flows in the \texttt{if} condition, both collected in the implicit flow of all the subsequent expressions. The value associated to the variable $x$ after the \texttt{if-then-else} statement makes explicit the fact that $x$ has implicit dependence on the sources of the boolean expression.\\
+
+As in \cite{Cortesi15}, we suppose the standard concrete evaluation of numerical expressions ($S_N : nexp \times V \to \mathds{Z}$), string expressions ($S_S : sexp \times V \to\mathds{S}$), boolean conditions ($S_B : bexp \times V \to \{\true, \false\}$) and label expressions ($S_L : lexp \times \Sigma \to \mathtt{Lab}$) that returns a data label given a label expression. We also reuse the semantics of expressions on atomic data $S_A : sexp \times \Sigma \to \parts{\mathds{D}}$, described in figure~\ref{sem_ad}. The semantics have been improved with a new operator, $checkpwd(sexp_1, sexp_2)$, used to compare a secret password to the user input.
+Moreover we distinguish between explicit and implicit flows. Basically, as for the semantics of expressions, we have no addition of new implicit flow, but only the memory of the implicit flow generated by previous expressions, so we propagate $\{\langle \ell_j, L_j\rangle : j \in J\}$ (the implicit flow that comes from previous statements):
+\begin{center}
+$\blangle S [\![ c ]\!](a, v),\ \{\langle \ell_j, L_j\rangle : j \in J\}\brangle$
+\end{center}
+%\notegian{l'esempio vuole mostrare la propagazione del flusso implicito 'ereditato' dalle espressioni precedenti}
+As for the concrete semantics of statements, we have to rewrite the ones that create implicit flow, so the \textit{if} and the \textit{while} statements (Fig.~\ref{sem_stm}). We split the semantics into explicit ($S_e$) and implicit ($S_i$), in order to consider both flows in a statement or an expression. The semantics will not be different for the two flows, this splitting will only be used to treat the two flows separately. We also add the $skip$ statement to handle the exit from a loop statement like the $while$.
+
+\begin{figure}[tbh]
+\footnotesize \[
+\begin{array}{rcl}
+S_A [\![ x ]\!](a, v) &=&  a(x)  \\
+S_A [\![read(lexp)]\!](a, v) & = & \{ \langle S_L [\![lexp ]\!](a, v), \emptyset\rangle \}\\
+S_A [\![ encrypt(sexp,k) ]\!](a, v) &=& \{ \langle \ell_1, L_1 \cup \{([encrypt,k], \ell_1)\} \rangle : \;  \langle \ell_1, L_1 \rangle \in  S_A [\![sexp ]\!](a, s, n) \}\; \\
+S_A [\![ s]\!](a, v) & = & \{ \langle \star, \emptyset\rangle \} \\
+S_A [\![ sexp_1 \circ sexp_2 ]\!](a, v) & = &
+\{  \langle \ell_1, L_1 \cup \{(\circ, \ell_2)\} \rangle,  \langle \ell_2, L_2 \cup \{(\circ , \ell_1) \} \rangle : \; \\
+& & \langle \ell_1, L_1 \rangle \in  S_A [\![sexp_1 ]\!](a, v) \; , \langle \ell_2, L_2 \rangle \in  S_A [\![sexp_2]\!](a, v) \}\; \\
+S_A [\![ sub(sexp, k_1, k_2) ]\!](a, v) & = &
+\{  \langle \ell_1, L_1 \cup \{([sub,  k_1, k_2],\ell_1)\} \rangle:  \langle \ell_1, L_1\rangle \in  S_A [\![sexp ]\!](a, v)\}\;\\
+S_A [\![ hash(sexp) ]\!](a, v) &=& \{ \langle \ell_1, L_1 \cup (hash,\ell_1) \rangle : \;   \langle \ell_1,  L_1 \rangle \in  S [\![sexp ]\!](a, v) \}\; \\
+S_A [\![ checkpwd(sexp, s) ]\!](a, v) & = &
+\{  \langle \ell_1, L_1 \cup \{(checkpwd, \star)\} \rangle : \; \langle \ell_1, L_1 \rangle \in  S_A [\![sexp_1 ]\!](a, v) \}\; \\
+\end{array}
+\]
+\caption{Semantics of Expressions on Atomic Data}
+\label{sem_ad}
+\end{figure}
+
+\begin{figure}[tbh]
+\footnotesize \[
+\begin{array}{rcl}
+S [\![x := sexp ]\!](a, v) & = & (a[x \mapsto S_A [\![sexp ]\!](a, v)], v[x \mapsto S_S [\![sexp ]\!](v)]) \\
+S [\![skip]\!](a, v) & = & (a, v) \\
+S [\![send(sexp)]\!](a, v) & = & (a, v) \\
+S [\![c_1 ; c_2 ]\!](a, v) & = &  S [\![c_2 ]\!](S [\![c_1 ]\!](a, v) )) \\
+S [\![\mbox{if } c_1 \mbox{ then } c_2  \mbox{ else }c_3 ]\!](a, v) & = &  
+\left\{
+\begin{array}{c}
+\langle S_e [\![c_2 ]\!](a, v),\ S_i [\![c_2 ]\!](a, v) \cup S_e [\![c_1 ]\!](a, v) \cup S_i [\![c_1 ]\!](a, v) \rangle\\
+\textit{if } S_B [\![c_1]\!](v) \\
+\langle S_e [\![c_3 ]\!](a, v),\ S_i [\![c_3 ]\!](a, v) \cup S_e [\![\neg c_1 ]\!](a, v) \cup S_i [\![c_1 ]\!](a, v) \rangle\\
+\textit{ otherwise} \\
+\end{array} \right. \\
+S [\![\mbox{while } c_1 \mbox{ do } c_2]\!](a, v) & = &  S [\![\mbox{ if } (c_1) \mbox{ then } \mbox{ (}c_2\mbox{; while } c_1 \mbox{ do } c_2 ) \mbox{ else \textit{skip} }]\!](a, v)
+\end{array}
+\]
+\caption{Concrete Semantics of Statements}
+\label{sem_stm}
+\end{figure}
+
+\noindent In an $if$ statement we expect a \emph{boolean condition}, that is an expression that has a boolean data type as result. In the condition we can find \emph{boolean algebra} expressions, that by definition return a boolean value, but also \emph{relational (comparison) operators}, that are defined in such a way to return a boolean value.
+\\
+
+\noindent\textit{Example} We assume $y$ getting its value from a data-store labelled $\ell_1$, while \emph{x} comes from the user input. We assume that it is given a value $>y$.
+\begin{lstlisting}
+y = read($\ell_1$);
+x = userinput();
+w = 9;
+if (x <= y)
+    z = w;
+else
+    z = y+3;
+x = x + z;
+\end{lstlisting}
+
+\noindent The following are the corresponding expressions (we specify in the subscript the code line where the corresponding variable, assignments or other construct is present):
+{\footnotesize \[
+\begin{array}{ccl}
+\mbox{y}_{1} &:& \blangle\{\langle \ell_1,\ \emptyset\rangle\},\ \emptyset\brangle\\
+\mbox{x}_{2} &:& \blangle\{\langle \star,\ \emptyset\rangle\},\ \emptyset\brangle\\
+\mbox{w}_{3} &:& \blangle\{\langle \star,\ \emptyset\rangle\},\ \emptyset\brangle\\
+\mbox{(x$<=$y)}_{4} &:& \blangle\{\langle\star,\{(<=,\ell_1)\}\rangle,\ \langle \ell_1, \{(>=,\star)\}\rangle\},\ \emptyset\brangle\\
+\mbox{y+3}_{7} &:& \blangle\{\langle \ell_1,\{(+,\star)\}\rangle,\ \langle \star, \{(+,\ell_1)\}\rangle\},\ \emptyset\brangle\\
+\mbox{z=y+3}_{7} &:& \blangle\underbrace{\{\langle \ell_1,\{(+,\star)\}\rangle,\ \langle \star, \{(+, \ell_1)\}\rangle\}}_\textbf{explicit flow},\ \underbrace{\{\emptyset\cup\{\langle\star,\{(>, \ell_1)\}\rangle,\ \langle \ell_1, \{(<,\star)\}\rangle\}\cup\emptyset\} }_\textbf{implicit flow}\brangle\\
+\mbox{x=x+z}_{8} &:&
+\begin{array}{l}
+ \blangle\{\langle \ell_1,\{(+,\star),(+,\star)\}\rangle,\ \langle \star, \{(+,\ell_1),(+,\star)\}\rangle\},\\ \{\emptyset\cup\{\langle\star,\{(>,\ell_1)\}\rangle,\ \langle \ell_1, \{(<,\star)\}\rangle\}\} \brangle\\
+\end{array}
+\end{array}
+\]}
+The first five expressions are not affected by implicit flows, so the $J$ set in these expressions is $\emptyset$. The fourth expression refers to the \texttt{if} conditional expression, the fifth one refers to what is computed in the part right to the equal (7th line of code), while the sixth refers to the whole 7th line of code (also considering variable z and implicit flow generated by the \texttt{if}).\\
+
+\section{Quantitative Semantics}
+
+We now extend the concrete semantics described in the previous chapter with the quantity notion. 
+
+We will adopt binary values in order to quantify the information flows. The use of a standardized dimension for quantities will allow the comparison of labels that represent values of different data type.
+
+\begin{definition}[Label Dimension]\label{lab_dim}
+Let $\ell_i$ be a label that denotes a location in the data-store. We introduce a function $\omega$ that returns the size of the memory location corresponding to the given label, such that:
+\begin{align*}
+nbit_{\ell_i}:=\omega(\ell_i)
+\end{align*}
+where $nbit$ is the retrieved dimension in bits.
+\end{definition}
+The following are the possible values returned by the $\omega$ function:
+\begin{itemize}
+\item \emph{numbers:} for simplicity we consider only integer numbers. The number of bits for a label containing such kind of data is: $nbits\ =\ \lfloor log_2(n)\rfloor + 1$
+\item \emph{string:}	instead of adopting the ASCII encoding, that uses $8\ bits$ for each character, we consider a simpler encoding, designed to represent only English alphabet, with uppercase and lowercase letters. Assuming this, we have 26+26 elements, plus other 10 elements for characters representing digits, thus this encoding needs only $6\ bits$ for each character.
+\item \emph{boolean:} since a boolean variable can only adopt two possible values, we produce only $1\ bit$ as dimension of this data type
+\end{itemize}
+
+
+We introduce  an extension of the semantics in order to take into account the quantity of information in the implicit flow, by adding a new expression associated to the extended $adexp$. 
+
+\begin{definition}[Quantitative Expression]\label{qadexp_def}
+We define as \textnormal{qadexp} a sequence of pairs of labels and associated quantitative values $\langle\ell,\ q\rangle$, that collect the quantity of information generated in the implicit flow for that specific label $\ell$. This sequence is combined with the extended \emph{adexp} in a unique expression as follows: 
+\begin{align*}
+d:=(\ \langle d_e, d_i \rangle ,\ d_q\ )
+\end{align*}
+where $d_q$ represents the \emph{qadexp}. In detail, we consider as expression representation the set:
+\begin{align*}
+\mathds{D}= \big (\ \blangle\{\langle \ell_i, L_i\rangle : i \in I\}, \{\langle \ell_j, L_j\rangle : j \in J\}\brangle,\ \{\langle \ell_k, q_k \rangle:k\in J \}\ \big )
+\end{align*}
+where $\ell_k$ are the labels used in statements that generate implicit flow, while $q_k$ is the associated quantity of information. This value is incremented each time the label is involved in the implicit flow. If the label is never in the implicit flow, no pair with the associated value will appear. 
+\end{definition}
+
+\noindent Thus every single pair $\langle \ell_k, q_k \rangle$ represents the quantity of information that the label $\ell_k$ has potentially released in the implicit flow. Notice that the expression $d:=(\ \langle d_e, d_i \rangle ,\ d_q\ )$ highlights how our analysis is the result of the combination of two approaches. While the first two components of the \emph{adexp} expression comes from a \emph{qualitative} approach, the latter is the result of a \emph{quantitative} approach.\\
+
+\noindent We define as $Q$ the domain of quantities of information. We can now introduce a function that describes how the quantitative value is collected.
+
+\begin{definition}[Quantitative function $\phi$]\label{quant_funct}
+Let $\phi$ be a function that update a quantitative value each time the associated label is involved in an implicit flow, such that:
+\begin{align*}
+val_{post}^\ell := val_{pre}^\ell + \phi_{stm} (\ell)
+\end{align*}
+where $\phi_{stm}  : \ell \mapsto val$ and $pre$ and $post$ refer to the statement (\emph{stm}) execution. The update of the quantity value associated to $\ell$ through a base 10 sum guarantees a sound overapproximation of this quantity.
+\end{definition}
+
+\noindent The quantity is mapped as an interval $[val, val]$ were higher and lower bound are the same value. This will allow an easier lift to the abstract value. Anyway, for the sake of readability, the singleton interval $[val,val]$ will be denoted by a single value $val$.\\%\notegian{aggiunta nota sull'abuso di notazione}\\
+
+\noindent \textit{Example} Let's consider the sequence $\{\langle \ell_1, 2\rangle, \langle \ell_2, 3\rangle, \langle \ell_3, 1\rangle\}$ as \emph{qadexp} generated at a given point of a $P$ program. For simplicity, we are not showing the explicit and implicit \emph{adexp} that normally should precede the \emph{qadexp}. Then, let's consider $\ell_1$ and $\ell_2$ involved in a code portion that generates an implicit flow that increments the quantitative value of one unit. Thus, the new sequence will be the following: $\{\langle \ell_1, 3\rangle, \langle \ell_2, 4\rangle, \langle \ell_3, 1\rangle\}$. \\
+
+
+\noindent We look for quantities of implicit flow generated by \texttt{if} and \texttt{while} statements. As for the \texttt{if} statement, we consider that the conditional expression can have only two possible results: \emph{true} and \emph{false}. Thus, the obtained information consists only of one $bit$ (as in McCamant et al.~\cite{McCamant07}), that corresponds to the two values that the boolean expression can take (notice that in both cases of the \texttt{if} we collect one bit). This bit represent the quantity of information that the statement reveals to an observer, allowing him to learn something of the labels in the conditional expression.
+
+
+In order to simplify the collection of quantities in case of $\texttt{if}$ statements we consider only $>$ and $<$ (strict) operators. This allow us to exclude the problem of equality $(a==b)$ and allows the collection of only one bit of information for each \texttt{if} statement (notice that issues with equality have been described also by Clark et al.~\cite{city191,Clark04}).  See Figure~\ref{sem_cond} for the semantics of conditional expressions. Notice that we still do not introduce the quantity value in this figure, we only express how to collect equality in conditional statements using integers instead of booleans. 
+
+\begin{figure}[H]
+{\small \[
+\begin{array}{rcl}
+S [\![sexp]\!](a, v) & = &  \{  \langle \ell_1, L_1 \cup \{(>, \star)\} \rangle  : \;\langle \ell_1, L_1 \rangle \in  S_A [\![sexp_1 ]\!](a, v) \}\; \\
+S [\![\neg sexp]\!](a, v) & = &  \{  \langle \ell_1, L_1 \cup \{(<, \star)\} \rangle : \;\langle \ell_1, L_1 \rangle \in  S_A [\![sexp_1 ]\!](a, v) \}\; \\
+S [\![sexp_1 > sexp_2]\!](a, v) & = &  \{  \langle \ell_1, L_1 \cup \{(>, \ell_2)\} \rangle,  \langle \ell_2, L_2 \cup \{(< , \ell_1) \} \rangle : \; \\
+& & \langle \ell_1, L_1 \rangle \in  S_A [\![sexp_1 ]\!](a, v) \; , \langle \ell_2, L_2 \rangle \in  S_A [\![sexp_2]\!](a, v) \}\; \\
+S [\![sexp_1 < sexp_2]\!](a, v) & = & \{  \langle \ell_1, L_1 \cup \{(<, \ell_2)\} \rangle,  \langle \ell_2, L_2 \cup \{(> , \ell_1) \} \rangle : \; \\
+& & \langle \ell_1, L_1 \rangle \in  S_A [\![sexp_1 ]\!](a, v) \; , \langle \ell_2, L_2 \rangle \in  S_A [\![sexp_2]\!](a, v) \}\; \\
+\end{array}
+\]}
+\caption{Concrete Semantics of Conditional Expressions}
+\label{sem_cond}
+\end{figure} 
+
+\subsection{Concrete Semantics Extended with Quantity}
+We define $\varphi$ as a function that maps variables to quantitative expressions $\varphi : \texttt{Var} \rightarrow qadexp$. We now insert the quantity notion into our extended collecting semantics. The initial quantity value is such that: 
+\begin{align*}
+\phi_{stm} (\ell_i) = 0\ \forall i
+\end{align*}
+and it is modified by $\phi_{stm}$ only in the statements that generate implicit flow. This means that in the other expressions the $\varphi$ component will be "carried" as is. The new semantics are described in figure ~\ref{quant_sem_ad}, ~\ref{quant_sem_stm} and ~\ref{quant_sem_cstm}. 
+
+\begin{figure}[H]
+{\small \[
+\begin{array}{rcl}
+S_A [\![ x ]\!](a, \varphi, v) &=&  a(x)  \\
+S_A [\![read(lexp)]\!](a, \varphi, v) & = & \{ \langle S_L [\![lexp ]\!](a, \varphi, v), \emptyset\rangle \}\\
+S_A [\![ encrypt(sexp,k) ]\!](a, \varphi, v) &=& \{ \langle \ell_1, L_1 \cup \{([encrypt,k], \ell_1)\} \rangle : \;\\
+& & \langle \ell_1, L_1 \rangle \in  S_A [\![sexp ]\!](a, \varphi, s, n) \}\; \\
+S_A [\![ s]\!](a, \varphi, v) & = & \{ \langle \star, \emptyset\rangle \} \\
+S_A [\![ sexp_1 \circ sexp_2 ]\!](a, \varphi, v) & = &
+\{  \langle \ell_1, L_1 \cup \{(\circ, \ell_2)\} \rangle,  \langle \ell_2, L_2 \cup \{(\circ , \ell_1) \} \rangle : \; \\
+& & \langle \ell_1, L_1 \rangle \in  S_A [\![sexp_1 ]\!](a, \varphi, v) \; ,\\
+& & \langle \ell_2, L_2 \rangle \in  S_A [\![sexp_2]\!](a, \varphi, v) \}\; \\
+S_A [\![ sub(sexp, k_1, k_2) ]\!](a, \varphi, v) & = &
+\{  \langle \ell_1, L_1 \cup \{([sub,  k_1, k_2],\ell_1)\} \rangle: \\
+& & \langle \ell_1, L_1\rangle \in  S_A [\![sexp ]\!](a, \varphi, v)\}\;\\
+S_A [\![ hash(sexp) ]\!](a, \varphi, v) &=& \{ \langle \ell_1, L_1 \cup (hash,\ell_1) \rangle : \;\\
+& &   \langle \ell_1,  L_1 \rangle \in  S [\![sexp ]\!](a, \varphi, v) \}\; \\
+S_A [\![ checkpwd(sexp, s) ]\!](a, \varphi, v) & = &
+\{  \langle \ell_1, L_1 \cup \{(checkpwd, \star)\} \rangle : \;\\
+& & \langle \ell_1, L_1 \rangle \in  S_A [\![sexp_1 ]\!](a, \varphi, v) \}\; \\
+\end{array}
+\]}
+\caption{Quantitative Semantics of Expressions on Atomic Data}
+\label{quant_sem_ad}
+\end{figure}
+
+
+\begin{figure}[H]
+{\small \[
+\begin{array}{rcl}
+S [\![x := sexp ]\!](a, \varphi, v) & = & (a[x \mapsto S_A [\![sexp ]\!](a, \varphi, v)], v[x \mapsto S_S [\![sexp ]\!](v)]) \\
+S [\![skip]\!](a, \varphi, v) & = & (a, \varphi, v) \\
+S [\![send(sexp)]\!](a, \varphi, v) & = & (a, \varphi, v) \\
+S [\![c_1 ; c_2 ]\!](a, \varphi, v) & = &  S [\![c_2 ]\!](S [\![c_1 ]\!](a, \varphi, v) )) \\ 
+\end{array}\\
+\]}
+\caption{Quantitative Concrete Semantics of Statements}
+\label{quant_sem_stm}
+\end{figure}
+
+\begin{figure}[H]
+{\small \[
+\begin{array}{ll}
+\multicolumn{2}{l}{S [\![\mbox{if } c_1 \mbox{ then } c_2  \mbox{ else }c_3 ]\!](a, v) = }\\ [0.25cm]
+\quad\bullet & \textit{if } S_B [\![c_1]\!](v) \textit{ is }\texttt{True}\textit{ then:}\\[0.2cm]
+& \begin{array}{ll}
+\textit{let }(a', \varphi', v')  = & \langle S_e [\![c_2 ]\!](a, \varphi, v),\ \\
+& \ S_i [\![c_2 ]\!](a, \varphi, v) \cup S_e [\![c_1 ]\!](a, \varphi, v) \cup S_i [\![c_1 ]\!](a, \varphi, v) \rangle \\
+\multicolumn{2}{l}{\textit{in } (a', \varphi'[(\ell_i,\ q_i)/(\ell_i,\ q_i+\phi_{stm} (c_1)): \ell_i \in \texttt{src}(c_1)], v') }\\
+\end{array}\\[0.55cm]
+\quad\bullet & \textit{ otherwise:}\\ [0.2cm]
+& \begin{array}{ll}
+\textit{let }(a', \varphi', v')  = & \langle S_e [\![c_3 ]\!](a, \varphi, v),\ \\
+& S_i [\![c_3 ]\!](a, \varphi, v) \cup S_e [\![\neg c_1 ]\!](a, \varphi, v) \cup S_i [\![c_1 ]\!](a, \varphi, v) \rangle \\
+\multicolumn{2}{l}{\textit{in } (a', \varphi'[(\ell_i,\ q_i)/(\ell_i,\ q_i+\phi_{stm} (c_1)): \ell_i \in \texttt{src}(c_1)], v')  }\\
+\end{array}\\[0.5cm]
+\multicolumn{2}{l}{\text{where } \phi_{stm} \text{ is the quantitative function in Def. 4} }\\[0.2cm]
+\multicolumn{2}{l}{S [\![\mbox{while } c_1 \mbox{ do } c_2]\!](a, \varphi, v)  = }\\[0.25cm]
+\quad\bullet & S [\![\mbox{ if } (c_1) \mbox{ then } \mbox{ (}c_2\mbox{; while } c_1 \mbox{ do } c_2 ) \mbox{ else \textit{skip} }]\!](a, \varphi, v)\\
+\end{array}
+\]}
+\caption{Quantitative Concrete Semantics of Control Statements}
+\label{quant_sem_cstm}
+\end{figure}
+
+
+
+\section{Abstract Semantics}
+
+\noindent We now introduce an extended version of the abstract semantics proposed by Cortesi et al.~\cite{Cortesi15}. The extension concerns the abstraction of the implicit flow and of the quantity of information notion, discussed in the previous sections. We adopt values and labels abstraction, that represent an over-approximation of the content of variables used in the concrete. We use $V^a$ as value abstract domain. While the implicit flow behaves as the explicit one, adopting the same abstraction, we need to specify a new abstraction for the quantity. 
+
+\begin{definition}[Quantity Value Abstraction]\label{quant_abs}
+The quantity associated to label expressions is an interval. Each obtained label $\ell^a$ is associated to an interval of quantities where the lower and upper bounds are the minimum and the maximum quantities of information that can be released through the implicit flow for that specific label, respectively. The abstract \emph{qadexp} will be $\langle \ell^a_k, q^a_{k_{min}}, q^a_{k_{max}} \rangle$.
+\end{definition}
+
+\noindent Notice that we can have unbounded quantities, in case the analysis revealed a complete leakage of the associated label. In this event, the interval is only unbounded in the upper bound. As for the lower bound, the minimum quantity of information flow is zero.
+
+\subsection{Atomic Data Abstraction Extension}
+We now define the atomic data abstraction extended for handling implicit flow and associated quantity. 
+
+\begin{definition}[Abstract Extended Atomic Data and Abstract Quantities]\label{ad_abs_ext}
+~\\ Let's consider a set of atomic data and associated quantity values. The set of tuples
+\begin{align*}
+\big (\ \blangle\{\langle \ell^a_w, L_w^{a\sqcap}, L_w^{a\sqcup}\rangle : w \in W\}, \{\langle \ell^a_z, L_z^{a\sqcap}, L_z^{a\sqcup}\rangle : z \in Z\}\brangle,\ \{\langle \ell_g^a, q_g^{a\sqcap}, q_g^{a\sqcup} \rangle: g\in Z \}\ \big )
+\end{align*}
+that belong to $\mathds{AD}$, is an extended abstract element where:
+\begin{itemize}
+\item[-] $\ell_w^a$ is an element that abstracts labels in $\texttt{Lab}$ and belongs to the explicit flow
+\item[-] $\ell_z^a$ and $\ell_g^a$ are elements that abstract labels in $\texttt{Lab}$ and belong to the implicit flow
+\item[-] $L_w^{a\sqcap}= \{(op^a_{iw}, \ell^a_{iw}): i \in I\}$ and $L_z^{a\sqcap}= \{(op^a_{jz}, \ell^a_{jz}): j \in J\}$ represent the under-approximation of the set of couples operator-label  $\ell_w^a $ and $\ell_z^a $ (respectively) with labels abstracted by $\ell_{iw}^a$ and $\ell_{jz}^a$ (respectively), and belong to the explicit and implicit flow respectively
+\item[-] $L_w^{a\sqcup}= \{(op^a_{iw}, \ell^a_{iw}): i \in I'\}$ and  $L_z^{a\sqcup}= \{(op^a_{jz}, \ell^a_{jz}): j \in J'\}$ represent the over-approximation of the set of couples operator-label  $\ell_w^a $ and $\ell_z^a $ (respectively) with labels abstracted by $\ell_{iw}^a$ and $\ell_{jz}^a$ (respectively), and belong to the explicit and implicit flow respectively
+\item[-] $L_w^{a\sqcap}\subseteq L_w^{a\sqcup}$ and $L_z^{a\sqcap}\subseteq L_z^{a\sqcup}$
+\item[-] $q_g^a$ is an element that abstract quantity values associated to a $\ell_g^a$ element
+\item[-] $q^{a\sqcap}_{kg}: k \in J$  is an under-approximation of the interval of possible quantities of information associated to $\ell_g^a $ with values represented by $q_{kg}^a$ 
+\item[-] $q^{a\sqcup}_{kg}: k \in J'$ is an over-approximation of the interval of possible quantities of information associated to $\ell_g^a $ with values represented by $q_{kg}^a$ 
+\item[-] $q_g^{a\sqcap} \leqslant q_g^{a\sqcup}$.
+\end{itemize}
+\end{definition}
+As a corollary, we define the source set of an atomic datum $\langle \{\ell^a_w: w\in W\}, \{\ell^a_z: z\in Z\} \rangle$ expressed as $\mathtt{src}(d)$.
+
+%\noindent There exists a partial order both on the abstract atomic data and on the quantitative values. While we inherit the former form Cortesi et al., both in implicit and explicit flows, we must define the second. 
+%
+%\begin{definition}[Partial Order on Quantities]\label{?}
+%Let's consider two abstract atomic data elements defined on the same abstract domain for values, labels and quantities:
+%\begin{align*}
+%d_1=  \big (\ \blangle\{\langle \ell_{1i}^a, L_{1i}^{a \sqcap}, L_{1i}^{a \sqcup} \rangle : i\in I_1\}, \{\langle \ell_{1j}^a, L_{1j}^{a \sqcap}, L_{1j}^{a \sqcup}\rangle : j \in J_1\}\brangle,\ \{\langle \ell_{1k}^a, q_{1k}^{a \sqcap}, q_{1k}^{a \sqcup} \rangle: k\in J_1 \}\ \big )\\ 
+%d_2=  \big (\ \blangle\{\langle \ell_{2i}^a, L_{2i}^{a \sqcap}, L_{2i}^{a \sqcup} \rangle : i\in I_2\}, \{\langle \ell_{2j}^a, L_{2j}^{a \sqcap}, L_{2j}^{a \sqcup}\rangle : j \in J_2\}\brangle,\ \{\langle \ell_{2k}^a, q_{2k}^{a \sqcap}, q_{2k}^{a \sqcup} \rangle: k\in J_2 \}\ \big )
+%\end{align*} 
+%a partial order between them exists and can be described as follows:
+%\begin{align*}
+%\begin{array}{ccc}
+%d_1 \sqsubseteq d_2 & \Leftrightarrow &
+%\forall i\in I_1 \, \exists\ w\in I_2: \ell_{1i}^a =  \ell_{2w}^a , \; L_{1i}^{a \sqcap} \supseteq  L_{2w}^{a \sqcap}, \;    L_{1i}^{a \sqcup} \subseteq  L_{2w}^{a \sqcup} \quad \wedge\\
+%& & \forall j\in J_1 \, \exists\ z\in J_2: \ell_{1j}^a =  \ell_{2z}^a , \; L_{1j}^{a \sqcap} \supseteq  L_{2z}^{a \sqcap}, \;    L_{1j}^{a \sqcup} \subseteq  L_{2z}^{a \sqcup} \quad \wedge\\
+%& & \forall k\in J_1 \, \exists\ g\in J_2: \ell_{1k}^a =  \ell_{2g}^a , \; q_{1k}^{a \sqcap} \geqslant  q_{2g}^{a \sqcap}, \;    q_{1k}^{a \sqcup} \leqslant  q_{2g}^{a \sqcup}\\
+%\end{array}
+%\end{align*}
+%\end{definition}
+
+
+Although we inherit the abstraction and concretization function for the explicit flows, we must redefine these functions in such a way to handle quantities. 
+
+\begin{definition}[Quantitative Abstraction function]\label{quant_abs_funct}	
+We denote by $\alpha_{\mathtt{Q}}$ be the abstraction function that, applied to $\{(\ell_k, q_k): k \in J\}$, returns the set $\{(\alpha_{\mathtt{Lab}}(\ell_k), q_k^{a\sqcap}, q_k^{a\sqcup}): k \in J\}$, 
+where $q_k^{a\sqcap}, q_k^{a\sqcup}$ represent the bounds of the abstract interval that approximates all possible quantitative values in the abstract domain $Q^a$.
+\end{definition} 
+
+\begin{definition}[Quantitative Abstraction function for Atomic Data]\label{quant_abs_funct_ad}	
+Given a concrete atomic datum $d=\big (\ \blangle\{\langle \ell_i, L_i\rangle : i \in I\}, \{\langle \ell_j, L_j\rangle : j \in J\}\brangle,\ \{\langle \ell_k, q_k \rangle:k\in J \}\ \big )$, we define an abstraction function $\alpha: \wp(\mathds{D}) \longrightarrow \mathds{AD}$ as:
+\begin{align*}
+\begin{array}{rcl}
+\alpha_s(d) & = & \big (\ \blangle\{\langle \alpha_{\mathtt{Lab}}(\ell_i), \alpha_{\mathtt{Lab}}(L_i), \alpha_{\mathtt{Lab}}(L_i)\rangle: i \in I \},\\
+& & \{\langle \alpha_{\mathtt{Lab}}(\ell_j), \alpha_{\mathtt{Lab}}(L_j), \alpha_{\mathtt{Lab}}(L_j)\rangle: j \in J \}\brangle ,\\
+& & \{\langle \alpha_{\mathtt{Lab}}(\ell_k), \alpha_{\mathtt{Q}}(q_k)\rangle: k \in J \}\big )\\ 
+\end{array}
+\end{align*}
+The abstraction function can easily be extended to sets thanks to the least upper bound operator 
+~\cite{Cortesi15}. As for the concretization function, this is defined as an adjoint of the abstraction function~\cite{Cortesi15}.
+\end{definition}
+
+\subsection{Abstract Semantics of Statements}
+We now define the extended abstract semantics. Expressions are described in the abstract domain, represented by the Cartesian product of $AD^a$ and $V^a$,  the Atomic Data abstract domain and the value domain respectively. In figure~\ref{abs_sem_stm} the abstract semantics of statements is described, improved with the implicit flow. Then, in 
+Figure~\ref{quant_abs_sem_cstm} the semantics is extended with the quantitative dimension. We omit here the abstract semantics of expressions, as it does not generate any implicit flow.
+
+\begin{figure}[H]
+{\small \[
+\begin{array}{rcl}
+\ael{S} [\![x := sexp ]\!](\ael{a}, \ael{v}) & = & (\ael{a}, \ael{S}_v [\![x := sexp ]\!](\ael{v})) \\
+S^a[\![skip]\!](a^a, v^a) & = & (a^a, v^a) \\
+\ael{S} [\![send(sexp) ]\!](\ael{a}, \ael{v}) & = & (\ael{a}, \ael{v})\\
+\ael{S} [\![c_1 ; c_2 ]\!](\ael{a}, \ael{v}) & = &  \ael{S} [\![c_2 ]\!](\ael{S} [\![c_1 ]\!](\ael{a}, \ael{v}) ) \qquad\qquad\qquad \\
+S^a [\![\mbox{if } c_1 \mbox{ then } c_2  \mbox{ else }c_3 ]\!](a^a, v^a) & = &  \\[0.15cm]
+\multicolumn{3}{r}{\blangle  S_e^a [\![c_2 ]\!](a^a, S_e^a[\![c_1 ]\!](v^a)) \sqcup S_e^a [\![c_3 ]\!](a^a, S_e^a[\![\neg c_1 ]\!](v^a))  , }\\
+\multicolumn{3}{r}{S_i^a [\![c_2 ]\!](a^a, S_e^a[\![c_1 ]\!](v^a)) \sqcup S_e^a [\![c_1 ]\!](a^a, v^a) \sqcup}\\
+\multicolumn{3}{r}{S_i^a [\![c_1 ]\!](a^a, v^a)\ \sqcup S_i^a [\![c_3 ]\!](a^a, S_e^a[\![\neg c_1 ]\!](v^a)) \sqcup }\\
+\multicolumn{3}{r}{S_e^a [\![\neg c_1 ]\!](a^a, v^a) \sqcup  S_i^a [\![c_1 ]\!](a^a, v^a)\brangle}\\[0.25cm]
+S^a [\![\mbox{while } c_1 \mbox{ do } c_2]\!](a, v) & = & \\[0.15cm]
+\multicolumn{3}{r}{fix ( S^a [\![\mbox{ if } (c_1) \mbox{ then } \mbox{ (}c_2\mbox{; while } c_1 \mbox{ do } c_2 )  \mbox{ else \textit{skip} } ]\!](a^a, v^a) )} \\
+\end{array}
+\]}
+\caption{Abstract Semantics of Statements}
+\label{abs_sem_stm}
+\end{figure}
+
+\begin{figure}[H]
+{\small \[
+\begin{array}{rcl}
+S^a[\![x := sexp ]\!](a^a, \varphi^a, v^a) & = & (a^a[x \mapsto S_A^a [\![sexp ]\!](a^a, \varphi^a, v^a)], v^a[x \mapsto S_S^a [\![sexp ]\!](v^a)]) \\
+S^a[\![skip]\!](a^a, \varphi^a, v^a) & = & (a^a, \varphi^a, v^a) \\
+S^a[\![send(sexp)]\!](a^a, \varphi^a, v^a) & = & (a^a, \varphi^a, v^a) \\
+S^a[\![c_1 ; c_2 ]\!](a^a, \varphi^a, v^a) & = &  S^a[\![c_2 ]\!](S^a[\![c_1 ]\!](a^a, \varphi^a, v^a) ) \\ 
+\end{array}\\
+\]}
+
+{\small \[
+\begin{array}{ll}
+\multicolumn{2}{l}{S^a [\![\mbox{if } c_1 \mbox{ then } c_2  \mbox{ else }c_3 ]\!](a^a, \varphi^a, v^a) = }\\ %[0.25cm]
+& \begin{array}{ll}
+\textit{let }(a'^a, \varphi'^a, v'^a)  = & 
+\blangle  S_e^a [\![c_2 ]\!](a^a, \varphi^a, S_e^a[\![c_1 ]\!](v^a)) \sqcup S_e^a [\![c_3 ]\!](a^a,\varphi^a, S_e^a[\![\neg c_1 ]\!](v^a))  , \\ 
+& S_i^a [\![c_2 ]\!](a^a, \varphi^a, S_e^a[\![c_1 ]\!](v^a)) \sqcup S_e^a [\![c_1 ]\!](a^a, \varphi^a, v^a) \sqcup \\  
+& S_i^a [\![c_1 ]\!](a^a, \varphi^a, v^a)\ \sqcup S_i^a [\![c_3 ]\!](a^a, \varphi^a, S_e^a[\![\neg c_1 ]\!](v^a)) \sqcup\\
+& S_e^a [\![\neg c_1 ]\!](a^a, \varphi^a, v^a) \sqcup  S_i^a [\![c_1 ]\!](a^a, \varphi^a, v^a) 
+\brangle\\%[0.25cm]
+\multicolumn{2}{l}{\textit{in } (a'^a, \varphi'^a[(\ell_i^a, q_i^{a\sqcap}, q_i^{a\sqcup})/(\ell_i^a, q_i^{a\sqcap}+\phi_{stm}^{a\sqcap}(c_1), q_i^{a\sqcup}+\phi_{stm}^{a\sqcup}(c_1)): \ell_i^a \in \texttt{src}(c_1)], v'^a) }\\[0.2cm]
+\multicolumn{2}{l}{\text{where } \phi_{stm} \text{ is the quantitative function in Def. 4} }\\[0.3cm]
+\end{array}\\[0.8cm]
+\multicolumn{2}{l}{S^a[\![\mbox{while } c_1 \mbox{ do } c_2]\!](a^a, \varphi^a, v^a)  = }\\%[0.25cm]
+& \qquad \textit{fix}(S^a [\![\mbox{ if } (c_1) \mbox{ then } \mbox{ (}c_2\mbox{; while } c_1 \mbox{ do } c_2 ) \mbox{ else \textit{skip} }]\!](a^a, \varphi^a, v^a))\\
+\end{array}
+\]}
+\caption{Quantitative Abstract Semantics of  Statements}
+\label{quant_abs_sem_cstm}
+\end{figure}
+In the concrete case it is quite simple to compute the number of iterations of a loop, with the use of a counter. Anyway, in the abstract we need an approximation of the number of iterations. Our approach will be composed of two steps:  we compute a {\em while} interval analysis
+followed by an {\em extended adexp} collection with quantitative value.
+
+\subsubsection{Step (a): \texttt{while} interval analysis} In the first step we compute the number of iterations of the loop. We add a counter initialized to $0$, and we insert an instruction inside the loop that will increase the counter of one unit at each iteration. We define an abstract semantics of our language on the infinite lattice of intervals. 
+\\
+%The domain of intervals is a partial order, because the order is present only in some pairs of elements, and it is also a complete lattice, because it's always possible to define lub and glb. The lattice of intervals is defined in the following way:%\notegian{Mi sono stampato il popl12 di Cousot, provo a darci un'occhio} 
+%\begin{center}
+%$L= \{\bot\}\,\cup \{[l,u]\ |\ l\in\mathbb{Z}\cup\{-\infty\},\ u\in\mathbb{Z}\cup\{+\infty\},\ l\le u\} $
+%\end{center}
+%\noindent We also define the interval arithmetics. Given an interval $[a,b]=\{x \in \mathbb{Z}\ |\ a\leq x\leq b \}$, the basic arithmetic operations are:
+%\begin{itemize}
+%\item $[a, b] \oplus [c, d] = [a + c, b + d] $
+%\item $[a, b] \ominus [c, d] = [a - d, b - c] $
+%\item $[a, b] \otimes [c, d] = [min (a * c, a * d, b * c, b * d), max (a * c, a * d, b * c, b * d)] $
+%\item $[a, b] \oslash [c, d] = [min (a / c, a / d, b / c, b / d), max (a / c, a / d, b / c, b / d)]$
+%\end{itemize}
+%Division must be extended, because in this form we cannot have 0 inside the second interval. In order to solve this we split the divisor interval into two parts: $[c,d]:\ [c,-1],\ [1,d]$.  We thus have to compute the division with these two new intervals.\\
+
+\noindent\textit{Example}
+Consider the following slice of code
+\begin{center}
+\begin{tabular}{lcr}
+\begin{lstlisting}
+x=-2
+while (x<27)
+  x= x+2
+print(x)
+\end{lstlisting} & $\qquad \rightarrow \qquad$ &
+\begin{lstlisting}
+x=-2  $\quad(i=0)$
+while (x<27)
+  x= x+2 $\quad(i=i+1)$
+print(x)
+\end{lstlisting} \\
+\end{tabular}
+\end{center}
+The analysis is expressed by:
+\begin{center}
+$\begin{cases}
+x_1 = [-2,-2],\ i_1 = [0,0]\\
+x_2 = (x_1 \cup x_3) \cap [- \infty ,\ 26],\ i_2 = (i_1 \cup i_3) \cap [- \infty ,\ + \infty]\\
+x_3 = x_2 \oplus [2,2],\ i_3 = i_2 \oplus [1,1] \\
+x_4 = (x_1 \cup x_3) \cap [27 ,\ + \infty],\ i_4 = (i_1 \cup i_3) \cap [- \infty ,\ + \infty]\\
+\end{cases}$
+\end{center}
+
+\begin{center}
+\begin{tabular}{lll}
+{\scriptsize it.\ 0\ $\begin{cases}
+x_1 \mapsto \emptyset,\ i_1 \mapsto \emptyset\\
+x_2 \mapsto \emptyset,\ i_2 \mapsto \emptyset\\
+x_3 \mapsto \emptyset,\ i_3 \mapsto \emptyset\\
+x_4 \mapsto \emptyset,\ i_4 \mapsto \emptyset\\
+\end{cases}$} & {\scriptsize it.\ 1\ $\begin{cases}
+x_1 \mapsto [-2,-2],\ i_1 \mapsto [0,0]\\
+x_2 \mapsto [-2,-2],\ i_2 \mapsto [0,0]\\
+x_3 \mapsto [0,0],\ i_3 \mapsto [1,1]\\
+x_4 \mapsto \emptyset,\ i_4 \mapsto \emptyset\\
+\end{cases}$} & {\scriptsize it.\ 2\ $\begin{cases}
+x_1 \mapsto [-2,-2],\ i_1 \mapsto [0,0]\\
+x_2 \mapsto [-2,0],\ i_2 \mapsto [0,1]\\
+x_3 \mapsto [0,2],\ i_3 \mapsto [1,2]\\
+x_4 \mapsto \emptyset,\ i_4 \mapsto \emptyset\\
+\end{cases}$} \\ \\ 
+\qquad\ldots & {\scriptsize it.\ 15\ $\begin{cases}
+x_1 \mapsto [-2,-2],\ i_1 \mapsto [0,0]\\
+x_2 \mapsto [-2,26],\ i_2 \mapsto [0,14]\\
+x_3 \mapsto [0,28],\ i_3 \mapsto [1,15]\\
+x_4 \mapsto \emptyset,\ i_4 \mapsto \emptyset\\
+\end{cases}$} & {\scriptsize
+it.\ 16\ $\begin{cases}
+x_1 \mapsto [-2,-2],\ i_1 \mapsto [0,0]\\
+x_2 \mapsto [-2,26],\ i_2 \mapsto [0,15]\\
+\ldots\\
+x_4 \mapsto [27,28],\ i_4 \mapsto [1,15]\\
+\end{cases}$}
+\end{tabular}
+\end{center}
+The upper bound of the interval of variable $i$ returns the number of iterations of the loop.\\ 
+
+We convert the interval into a quantity dimension, by expressing values as number of bits of the equivalent of the number expressed in binary form.\\
+
+\noindent \textit{Example} The interval of iterations of the previous example, $i\mapsto [1,15]$, becomes $[1,4]$, where $4$ are the number of bits needed leaked in $15$ iterations.\\ \\
+\noindent We can improve the interval analysis with the use of a \emph{widening operator} with threshold (see~\cite{CousotCousot92-4,Cortesi08wideningoperators,Cortesi11wideningand}). 
+
+\subsubsection{Step (b): \emph{extended adexp} collection with quantitative value}
+The analysis is performed as defined in previous section. Then the quantitative value is added at the end of the cycle.\\ \\
+\noindent \textit{Example} Consider the following example:
+\begin{center}
+\begin{lstlisting}
+secret = read($\ldots$)
+found = False
+while (!Found)
+  pwd = user_input()
+  found = checkpwd(pwd, secret)
+\end{lstlisting}
+\end{center}
+
+\noindent The following are the corresponding expressions in the abstract after the first iteration of the loop:
+\begin{center}
+\begin{tabular}{c}
+\footnotesize
+$
+\begin{array}{ccl}
+\mbox{secret}_{1} &:& \blangle\big\{\langle \ell_1,\ \emptyset,\ \emptyset\rangle\big\},\ \emptyset\brangle\\
+\mbox{found}_{2} &:& \blangle\big\{\langle \star,\ \emptyset,\ \emptyset\rangle\big\},\ \emptyset\brangle\\
+\mbox{!found}_{3} &:& \blangle\big\{\langle \star,\ \{(<, \star)\},\ \{(<, \star)\}\rangle\big\},\ \emptyset\brangle\\
+\mbox{pwd}_{4} &:& \blangle\big\{\langle \star,\ \emptyset,\ \emptyset\rangle\big\},\ \big\{\langle \star,\ \{(<, \star)\},\ \{(<, \star)\}\rangle\big\}\brangle\\
+\mbox{found}_{5}  &:& \blangle\big\{\langle \ell_1,\ \{(checkpwd, \star)\},\ \{(checkpwd, \star)\}\rangle\big\},\ \big\{\langle \star,\ \{(<, \star)\},\ \{(<, \star)\}\rangle\big\}\brangle\\
+\end{array}
+$
+\end{tabular}
+\end{center}
+
+\noindent But, if the condition is still true, at the beginning of the second iteration the implicit flow will contain the new definition of the variable \emph{found}, thus each expression inside the scope of the \texttt{while} will be:
+\begin{center}
+{\footnotesize$ \blangle \big\{\ldots \small\textit{explicit flow}\ldots\big\} ,\ \big\{\langle \ell_1,\ \{(checkpwd, \star)\},\ \{(checkpwd, \star), (<, \star), (>, \star\}\rangle\big\}\brangle $}
+\end{center}
+Notice that the function \emph{checkpw($p_1$,$p_2$)} returns a boolean value, so \emph{one bit}. This means that we are introducing a bit for each iteration in the implicit flow.\\ 
+
+We now add the quantity interval computed in \emph{step (a)}:
+\begin{center}
+
+{\footnotesize $ \big\{\ \blangle \big\{\ldots \small\textit{explicit flow}\ldots\big\} ,\ \big\{\langle \ell_1,\ \{(checkpwd, \star)\},\ \{(checkpwd, \star), (<, \star), (>, \star\}\rangle\big\}\brangle,\ \langle \ell_1,\ 1,\ 4 \rangle\ \big\} $}
+\end{center}
+
+
+
+If inside the scope of a while we have an operator that obfuscates a confidential data, we must know the quantity of information that is released by the operator. For instance, in the previous example the operator \texttt{checkpwd($p_1$,$p_2$)} checks if the password given by the user is the correct one, and returns a boolean value of 1 bit. Thus in this case the analysis captures a single bit at each iteration, and the quantitative value will depend only on the number of iterations.\\
+But, there may also exist operators that releases more than one single bit. In such case, we must perform a sort of product of the number of iterations and the released bits. 
+
+
+ \section{Applications}
+
+\noindent We apply our analysis to a few apps listed in the DroidBench application set~\cite{DroidBench}, created by the Secure Software Engineering group of the Technische Universit\"{a}t Darmstadt. This set is open source and represent a testing ground specifically designed for static and dynamic security tools. We have chosen some examples that specifically present an implicit flow inside the code.\\
+For the sake of readability, we simplified some library functions. Anyway, we did not manage to avoid every function not covered by our semantics. So new semantic rules are added in examples where new functions are present in the code. In each example, a concrete analysis is proposed, based on a given assumption. Then we perform abstract analysis, followed by an abstract quantitative analysis and the verification of a policy compliance. For simplicity, we have chosen to evaluate quantitative values only after the abstract analysis, thus abstract semantics (and concrete too) in the examples will not contain the $qadexp$.
+
+\subsection{ImplicitFlow1}
+The first example  is an application that gets the DeviceId (\texttt{IMEI}), obfuscates it and finally leaks it. The obfuscation can be performed with two functions, and the main difference between them is the obfuscation power: while in the former is low, in the latter is high.  We modify the original example: the code has been simplified in order to facilitate the use of our semantics.
+
+\begin{center}
+\begin{multicols}{2}
+\begin{lstlisting}[basicstyle=\sffamily\scriptsize]
+public class ImplicitFlow1 extends Activity {
+
+  protected void onCreate(...) {
+    //...
+
+    String imei = getDeviceId(); //device id 
+    String obfuscatedIMEI 
+      = obfuscateIMEI(imei);
+    writeToLog(obfuscatedIMEI);
+		
+    obfuscatedIMEI 
+      = hardObfIMEI(imei);
+    writeToLog(obfuscatedIMEI); 		
+  }
+	
+  private String obfuscateIMEI(String imei){
+    String result = "";
+    char[] imeiAsChar = imei.toCharArray();
+    int len = imeiAsChar.length();			
+    int i = 0;
+    int shift = 49;	
+	
+    while (i < len){
+      result += (char) 
+        (((int)imeiAsChar[i]) + shift);
+      //returns 'a' for '0', 'b' for '1', ...
+      i++;
+    }
+    return result;
+  }
+\end{lstlisting}
+\vfill\columnbreak
+
+\begin{lstlisting}[firstnumber=31, basicstyle=\sffamily\scriptsize]
+  private String hardObfIMEI(String imei){		
+    char[] imeiAsChar = imei.toCharArray();		
+    String result = "";    
+    int len = imeiAsChar.length();
+    int i = 0;
+    
+    while (i < len){
+      result += (char) 
+        (((int)imeiAsChar[i]) +1 + (i*i)%62);
+      i++;
+    }
+	
+    return result;
+  }
+	
+  private void writeToLog(String message){
+    Log.i("INFO", message); //sink
+  }    
+}
+\end{lstlisting}
+\end{multicols}
+\end{center}
+
+\noindent First we must define new semantic rules for new functions:
+\begin{center}
+%\hskip-0.5cm
+{\footnotesize
+$\begin{array}{rcl}
+S_A [\![ getDeviceId() ]\!](a, v) & = & \{ \langle S_L [\![lexp ]\!](a, v), \emptyset\rangle \}\\
+S_A [\![ toCharArray(sexp) ]\!](a, v) & = &
+\{  \langle \ell_1, L_1 \cup \{(toCharArray, \ell_1)\} \rangle : \; \langle \ell_1, L_1 \rangle \in  S_A [\![sexp_1 ]\!](a, v) \}\; \\
+S_A [\![ length(sexp) ]\!](a, v) & = &
+\{  \langle \ell_1, L_1 \cup \{(length, \ell_1)\} \rangle : \; \langle \ell_1, L_1 \rangle \in  S_A [\![sexp_1 ]\!](a, v) \}\; \\
+S_A [\![Log(sexp)]\!](a, v) & = &  (a, v)\\
+S_A [\![ (typecast) sexp ]\!](a, v) & = &
+\{  \langle \ell_1, L_1 \cup \{(cast(type), \ell_1)\} \rangle : \; \langle \ell_1, L_1 \rangle \in  S_A [\![sexp_1 ]\!](a, v) \}\; \\
+\end{array}$}
+\end{center}
+
+
+\noindent where $getDeviceId$ returns the \texttt{IMEI} from the datastore, $toCharArray$ convert the label to a char, $length$ returns the dimension (in integer) of an array and $Log$ writes the argument to a log file. We interpret the casting (type conversion) with the use of the operator $cast(type)$, with the associated type to which the expression is cast. We also add the modulo $\%$ to the semantics. We collect it as $mod$ and its behaviour is similar to the other arithmetic operators. As for arrays, when we are referring to a single element of the array, we assume to perform a $S_A [\![ sub(sexp, k_1, k_2) ]\!](a, v)$ where $k_1$ and $k_2$ are the same element and are used as a sort of index in the array.
+
+\subsubsection{Concrete Analysis}
+In this example user input is not required. We assume that the \texttt{IMEI} is contained in the datastore and can be retrieved thanks to the $getDeviceId$ function, that behaves like a $S_A [\![read(lexp)]\!](a, v)$. We also add a counter that allows to count the number of iterations in the loop. Trivially, at the end of each cycle this value will be equal to the dimension of the \texttt{IMEI} (\texttt{IMEI} dimension is of 14 characters). We inserted $\ldots$ where previous statements are repeated.
+
+\begin{center}
+%\hskip-0.5cm
+{\footnotesize$
+\begin{array}{ccl}
+\mbox{imei}_{6} &:& \blangle\big\{\langle \ell_1,\ \emptyset\rangle\big\},\ \emptyset\brangle\\
+\mbox{result}_{17} &:& \blangle\big\{\langle \star,\ \emptyset\rangle\big\},\ \emptyset\brangle\\
+\mbox{imeiAsChar}_{18} &:& \blangle\big\{\langle \ell_1,\ \{(toCharArray, \ell_1)\}\rangle\big\},\ \emptyset\brangle\\
+\mbox{len}_{19} &:& \blangle \big\{\langle \ell_1 ,\ \{(length, \ell_1)\} \rangle\big\},\ \emptyset\brangle\\
+\mbox{i}_{20} &:& \blangle\big\{ \langle\star,\ \emptyset\rangle\big\},\ \emptyset\brangle\\
+\mbox{shift}_{21} &:& \blangle\big\{ \langle\star,\ \emptyset\rangle\big\},\ \emptyset\brangle\\
+\mbox{\textit{while cond}}_{23} &:& \blangle \big\{\langle \ell_1, \{(length, \ell_1),(>,\star)\}\rangle\big\},\ \emptyset\brangle \quad (\textit{count}_1 = 0)\\
+\mbox{result}_{24} &:& \blangle \big\{\langle \ell_1, \{([sub, \star, \star], \ell_1),(cast(int), \ell_1),(+,\star),(cast(char), \ell_1), (+, \star)\}\rangle\big\},\\
+& & \qquad \big\{\langle \ell_1, \{(length, \ell_1),(>,\star)\}\rangle\big\}\brangle\\
+\mbox{i}_{27} &:& \blangle \big\{ \langle\star, \{(+,\ \star)\}\rangle\big\},\ \big\{\langle \ell_1, \{(length, \ell_1),(>,\star)\}\rangle\big\}\brangle\\
+\mbox{\ldots} & & \textit{(after loop exit the condition in the flow is inverted)}, \quad 
+(\textit{count}_1 = 14)\\
+\mbox{\textit{log}}_{47} &:& \blangle \big\{\langle \ell_1, \{([sub, \star, \star], \ell_1),(cast(int), \ell_1),(+,\star),(cast(char), \ell_1), (+, \star), \ldots\}\rangle\big\},\ \\
+& & \qquad \big\{\langle \ell_1, \{(length, \ell_1),(>,\star)(<,\star)\}\rangle\big\}\brangle\\
+\mbox{imeiAsChar}_{32} &:& \blangle\big\{\langle \ell_1,\ \{(toCharArray, \ell_1)\}\rangle\big\},\ \emptyset\brangle\\
+\mbox{result}_{33} &:& \blangle\big\{\langle \star,\ \emptyset\rangle\big\},\ \emptyset\brangle\\
+\mbox{len}_{34} &:& \blangle \big\{\langle \ell_1 \, \{(length, \ell_1)\} \rangle\big\},\ \emptyset\brangle\\
+\mbox{i}_{35} &:& \blangle\big\{ \langle\star, \emptyset\rangle\big\},\ \emptyset\brangle\\
+\mbox{\textit{while cond}}_{37} &:& \blangle \big\{\langle \ell_1, \{(length, \ell_1),(>,\star)\}\rangle\big\},\ \emptyset\brangle \quad (\textit{count}_2 = 0)\\
+\mbox{result}_{38} &:& \blangle \big\{\langle \ell_1, \{([sub, \star, \star], \ell_1),(cast(int), \ell_1),(+,\star),(\times, \star),(mod, \star),(cast(char), \ell_1), \\
+& & \qquad  (+, \star)\}\rangle\big\},\ \big\{\langle \ell_1, \{(length, \ell_1),(>,\star)\}\rangle\big\}\brangle\\
+\mbox{i}_{40} &:& \blangle \big\{ \langle\star, \{(+,\ \star)\}\rangle\big\},\ \big\{\langle \ell_1, \{(length, \ell_1),(>,\star)\}\rangle\big\}\brangle\\
+\mbox{\ldots} & & \textit{(after loop exit the condition in the flow is inverted)}, \quad 
+(\textit{count}_2 = 14)\\
+\mbox{\textit{log}}_{47} &:& \blangle \big\{\langle \ell_1, \{([sub, \star, \star], \ell_1),(cast(int), \ell_1),(+,\star),(\times, \star),(mod, \star),(cast(char), \ell_1), \\
+& & \qquad  (+, \star), \ldots\}\rangle\big\},\ \big\{\langle \ell_1, \{(length, \ell_1),(>,\star)(<,\star)\}\rangle\big\}\brangle\\
+\end{array}
+$}
+\end{center}
+
+\noindent As we can see from the concrete analysis, it does not change so much between the first and the second function. Indeed, both uses a loop, and in both the conditional expressions depend on the dimension of the secret label. Notice that if the loop condition does not depend on what happens in the loops scope, the implicit flow generated only depends on the dimension.
+
+\subsubsection{Abstract Analysis}
+As there is no user inputs in this program, the abstract analysis is quite similar to the concrete one. Changes consists in the collection of both the normal and the inverse relational operator for the conditional expression of loops, and the use of the interval analysis for the acquirement of the number of iterations. Notice that, as the dimension of the \texttt{IMEI} (remember that we assumed an \texttt{IMEI} of 14 characters) does not change, the corresponding label does not need to be abstracted, as its value is persistent during the execution. For the same reason, also its dimension does not change and loops will always performs the same number of iterations. We inserted $\ldots$ where previous statements are repeated.
+
+\begin{center}
+%\hskip-0.5cm
+{\footnotesize$
+\begin{array}{ccl}
+\mbox{imei}_{6} &:& \blangle\big\{\langle \ell_1,\ \emptyset,\ \emptyset\rangle\big\},\ \emptyset\brangle\\
+\mbox{result}_{17} &:& \blangle\big\{\langle \star,\ \emptyset,\ \emptyset\rangle\big\},\ \emptyset\brangle\\
+\mbox{imeiAsChar}_{18} &:& \blangle\big\{\langle \ell_1,\ \{(toCharArray, \ell_1)\},\ \{(toCharArray, \ell_1)\}\rangle\big\},\ \emptyset\brangle\\
+\mbox{len}_{19} &:& \blangle \big\{\langle \ell_1 ,\ \{(length, \ell_1)\},\ \{(length, \ell_1)\} \rangle\big\},\ \emptyset\brangle\\
+\mbox{i}_{20} &:& \blangle\big\{ \langle\star,\ \emptyset,\ \emptyset\rangle\big\},\ \emptyset\brangle\\
+\mbox{shift}_{21} &:& \blangle\big\{ \langle\star,\ \emptyset,\ \emptyset\rangle\big\},\ \emptyset\brangle\\
+\mbox{\textit{while cond}}_{23} &:& \blangle \big\{\langle \ell_1, \{(length, \ell_1),(>,\star)\}, \{(length, \ell_1),(>,\star)\}\rangle\big\},\ \emptyset\brangle\\
+\mbox{result}_{24} &:& \blangle \big\{\langle \ell_1, \{([sub, \star, \star], \ell_1),(cast(int), \ell_1),(+,\star),(cast(char), \ell_1), (+, \star)\},\\
+& & \qquad\{([sub, \star, \star], \ell_1),(cast(int), \ell_1),(+,\star),(cast(char), \ell_1), (+, \star)\}\rangle\big\},\ \\
+& & \qquad\big\{\langle \ell_1, \{(length, \ell_1)\}, \{(length, \ell_1),(>,\star), (<,\star)\}\rangle\big\}\brangle\\
+\mbox{i}_{27} &:& \blangle \big\{ \langle\star, \{(+,\ \star)\}\rangle\big\},\ \big\{\langle \ell_1, \{(length, \ell_1)\}, \{(length, \ell_1),(>,\star), (<,\star)\}\rangle\big\}\brangle\\
+\mbox{\textit{log}}_{47} &:& \blangle \big\{\langle \ell_1, \{([sub, \star, \star], \ell_1),(cast(int), \ell_1),(+,\star),(cast(char), \ell_1), (+, \star)\},\\
+& & \qquad\{([sub, \star, \star], \ell_1),(cast(int), \ell_1),(+,\star),(cast(char), \ell_1), (+, \star), \ldots\}\rangle\big\},\ \\
+& & \qquad\big\{\langle \ell_1, \{(length, \ell_1)\}, \{(length, \ell_1),(>,\star), (<,\star)\}\rangle\big\}\brangle\\
+\mbox{imeiAsChar}_{32} &:& \blangle\big\{\langle \ell_1,\ \{(toCharArray, \ell_1)\},\ \{(toCharArray, \ell_1)\}\rangle\big\},\ \emptyset\brangle\\
+\mbox{result}_{33} &:& \blangle\big\{\langle \star,\ \emptyset,\ \emptyset\rangle\big\},\ \emptyset\brangle\\
+\mbox{len}_{34} &:& \blangle \big\{\langle \ell_1 ,\ \{(length, \ell_1)\},\ \{(length, \ell_1)\} \rangle\big\},\ \emptyset\brangle\\
+\mbox{i}_{35} &:& \blangle\big\{ \langle\star,\ \emptyset,\ \emptyset\rangle\big\},\ \emptyset\brangle\\
+\mbox{\textit{while cond}}_{37} &:& \blangle \big\{\langle \ell_1, \{(length, \ell_1),(>,\star)\}, \{(length, \ell_1),(>,\star)\}\rangle\big\},\ \emptyset\brangle\\
+\mbox{result}_{38} &:& \blangle \big\{\langle \ell_1, \{\langle \ell_1, \{([sub, \star, \star], \ell_1),(cast(int), \ell_1),(+,\star),(\times, \star),(mod, \star),\\
+& & \qquad(cast(char), \ell_1), (+, \star)\}, \{([sub, \star, \star], \ell_1),(cast(int), \ell_1),(+,\star),(\times, \star),\\
+& & \qquad(mod, \star),(cast(char), \ell_1), (+, \star)\}\rangle\big\},\ \\
+& & \qquad\big\{\langle \ell_1, \{(length, \ell_1)\}, \{(length, \ell_1),(>,\star), (<,\star)\}\rangle\big\}\brangle\\
+\mbox{i}_{40} &:& \blangle \big\{ \langle\star, \{(+,\ \star)\}\rangle\big\},\ \big\{\langle \ell_1, \{(length, \ell_1)\}, \{(length, \ell_1),(>,\star), (<,\star)\}\rangle\big\}\brangle\\
+\mbox{\textit{log}}_{47} &:&  \blangle \big\{\langle \ell_1, \{\langle \ell_1, \{([sub, \star, \star], \ell_1),(cast(int), \ell_1),(+,\star),(\times, \star),(mod, \star),\\
+& & \qquad(cast(char), \ell_1), (+, \star)\}, \{([sub, \star, \star], \ell_1),(cast(int), \ell_1),(+,\star),(\times, \star),\\
+& & \qquad(mod, \star),(cast(char), \ell_1), (+, \star), \ldots\}\rangle\big\},\ \\
+& & \qquad\big\{\langle \ell_1, \{(length, \ell_1)\}, \{(length, \ell_1),(>,\star), (<,\star)\}\rangle\big\}\brangle\\
+\end{array}
+$}
+\end{center}
+
+\noindent Notice that at the end of the loops the implicit flow contains both original and inverse conditional operators.
+
+\subsubsection{Quantitative Analysis}
+Generally, the interval analysis is computed in order to infer the minimum and maximum number of iteration of the loop. Thanks to these two values, it is possible to build the interval of quantities, that will tell the minimum and the maximum of the revealed information in the implicit flow. Anyway, in this example the number of iteration does not change, because it is performed on the fixed dimension of the \texttt{IMEI} (see previous notes at the beginning of the abstract analysis). Thus, we already know the number of iterations, that is $14$, without the need to perform interval analysis. Moreover, we knows that the conditional expression of the two loops does not depend on a function inside the scope of the loop. This means that only \emph{one bit} is leaked for each iteration. We now infer the number of bits using the method described in the quantitative chapter:
+\begin{align*}
+quantity =\ \lfloor log_2(n\_iterations)\rfloor + 1\ = 4\ bits 
+\end{align*}
+So, in both loops, the $qadexp$ will be $\langle \ell_1, 4, 4 \rangle$.
+ 
+
+\subsection{ImplicitFlow2}
+This Android application require to the user the insertion of a password. Then, this password is compared to the correct one, that comes from the datastore. After the evaluation, a message is saved to a log file. This operation carries an implicit flow, because it tells something about the secret value.
+
+\begin{center}
+\begin{lstlisting}[basicstyle=\sffamily\scriptsize]
+public class ImplicitFlow2 extends Activity {
+	
+  protected void onCreate($\ldots$){
+    //...
+  }
+	
+  public void checkPassword(View view){
+    String userInputPassword = //user input
+    String superSecure = //secret password
+		
+    if(checkpwd(superSecure,userInputPassword))
+      passwordCorrect = true;
+    else
+      passwordCorrect = false;
+		
+    if(passwordCorrect)
+      Log.i("INFO", "Password is correct");
+    else
+      Log.i("INFO", "Password is not correct");
+  }
+}
+\end{lstlisting}
+\end{center}
+
+\subsubsection{Concrete Analysis}
+Before starting an analysis, we must define some semantics peculiar to this example. In particular, we must define the semantics for the function \texttt{Log}. For this purpose, we reuse the semantics of \emph{send}: $S_A [\![Log(sexp)]\!](a, v)  =  (a, v)$. This kind of expression does not generate implicit flow, thus no quantitative value. As for the abstract version, the semantics is similar.\\
+We now perform a concrete analysis, supposing that the password inserted by the user is not the correct one. We define the concrete datastore where we have only the label that corresponds to the variable $superSecure$, thus $\langle \ell_1, \emptyset \rangle$.
+
+\begin{center}
+%\hskip-0.5cm
+{\footnotesize$
+\begin{array}{ccl}
+\mbox{userInputPassword}_{8} &:& \blangle\{\langle \star,\ \emptyset\rangle\},\ \emptyset\brangle\\
+\mbox{superSecure}_{9} &:& \blangle\{\langle \ell_1,\ \emptyset\rangle\},\ \emptyset\brangle\\
+\mbox{\textit{if condtion}}_{11} &:& \blangle\{\langle \ell_1,\ \{(checkpwd, \star)\}\rangle\},\ \emptyset\brangle\\
+\mbox{passwordCorrect}_{14} &:& \blangle\{\langle \star,\ \emptyset\rangle\},\ \{\langle  \ell_1,\ \{(checkpwd, \star), (<, \star)\}\brangle\\
+\mbox{\textit{$2^{nd}$ if condition}}_{16} &:& \blangle\{\langle \star,\ \emptyset\rangle\},\ \{\langle  \ell_1,\ \{(checkpwd, \star), (<, \star)\}\brangle\\
+\mbox{log}_{19} &:& \blangle\emptyset,\ \{\langle  \ell_1,\ \{(checkpwd, \star), (<, \star)\}\brangle\\
+\end{array}$}
+\end{center}
+
+\subsubsection{Abstract Analysis}
+We now perform an abstract analysis on the given program. We assume a string abstraction $\langle NULL,\ \top \rangle$ and no abstraction for labels (we have only one label, and it is always the same).
+
+\begin{center}
+%\hskip-0.5cm
+{\footnotesize$
+\begin{array}{ccl}
+\mbox{userInputPassword}_{8} &:& \blangle\{\langle \star,\ \emptyset, \emptyset\rangle\},\ \emptyset\brangle\\
+\mbox{superSecure}_{9} &:& \blangle\{\langle \ell_1,\ \emptyset,\emptyset\rangle\},\ \emptyset\brangle\\
+\mbox{\textit{if condtion}}_{11} &:& \blangle\{\langle \ell_1,\ \{(checkpwd, \star)\},\ \{(checkpwd, \star)\}\rangle\},\ \emptyset\}\brangle\\
+\mbox{passwordCorrect}_{12,14} &:& \blangle\{\langle \star,\ \emptyset,\emptyset\rangle\},\ \{\langle  \ell_1,\ \{(checkpwd, \star)\},\{(checkpwd, \star), (>, \star),(<, \star)\}\rangle\brangle\\
+\mbox{\textit{$2^{nd}$ if condition}}_{16} &:& \blangle\{\langle \star,\ \{(>, \star)\}\rangle\},\\ 
+&:& \{\langle  \ell_1,\ \{(checkpwd, \star)\},\{(checkpwd, \star), (>, \star),(<, \star)\}\rangle\brangle\\
+\mbox{log}_{17,19} &:& \blangle\emptyset,\ \{\langle  \ell_1,\ \{(checkpwd, \star)\},\\
+&:& \{(checkpwd, \star), (>, \star),(<, \star),(>, \star),(<, \star)\}\rangle\brangle\\
+\end{array}
+$}
+\end{center}
+
+\subsubsection{Quantitative Analysis} 
+Remember that after the abstraction, quantities are collected with the minimum and the maximum of the interval of possible quantity of information. In the current program, this value appears with the first \texttt{if} condition, by introducing a bit of information:
+\begin{align*}
+\begin{array}{ccl}
+\mbox{\textit{if condtion}}_{11} & : & \big \{ \blangle\{\langle l_1,\ \{(checkpwd, \star)\},\ \{(checkpwd, \star)\}\rangle\},\ \emptyset\brangle, \langle \ell_1, 1, 1 \rangle \big \}
+\end{array}
+\end{align*}
+Notice that this value will remain the same in the rest of the abstract expressions, even if there is another \texttt{if} statement. This happens because in the second \texttt{while} the conditional expression is evaluated on an explicit flow that does not contain any labels (even if they are present in the implicit flow).
+
+
+\subsection{ImplicitFlow3}
+As the previous example, also the next one requires the insertion of a password that will be compared to the correct one. Anyway, in this case the information is leaked through the creation of new objects.
+
+\begin{center}
+\begin{multicols}{2}
+\begin{lstlisting}[basicstyle=\sffamily\scriptsize]
+public class ImplicitFlow3 extends Activity {
+
+  protected void onCreate(...) {
+    //...
+  }
+
+  public void leakData(View view){
+    String userIntPwd = //user input
+    String superSecure = //secret password
+  		
+    Interface classTmp;
+    if(checkpwd(superSecure,userIntPwd))
+      classTmp = new ClassA();
+    else
+      classTmp = new ClassB();
+  		
+    classTmp.leakInfo();
+ }
+\end{lstlisting}
+\vfill\columnbreak
+
+\begin{lstlisting}[firstnumber=19, basicstyle=\sffamily\scriptsize]
+  interface Interface{
+    public void leakInfo();
+  }
+  	
+  public class ClassA implements Interface{
+  	public void leakInfo(){
+  	  Log.i("INFO", "pwd correct");
+  	}
+  }
+  	
+  public class ClassB implements Interface{
+  	public void leakInfo(){
+  	  Log.i("INFO", "pwd incorrect");
+  	}
+  }
+}
+\end{lstlisting}
+\end{multicols}
+\end{center}
+
+\subsubsection{Concrete Analysis}
+We reuse the \texttt{Log} semantic described in the previous example. We suppose that the password inserted by the user is the correct one. We define the concrete datastore where we have only the label that corresponds to the variable $superSecure$, thus $\{\langle \ell_1, \emptyset \rangle\}$.
+
+\begin{center}
+\hskip-0.5cm
+{\footnotesize$
+\begin{array}{ccl}
+\mbox{userIntPwd}_{8} &:& \blangle\{\langle \star,\ \emptyset\rangle\},\ \emptyset\brangle\\
+\mbox{superSecure}_{9} &:& \blangle\{\langle \ell_1,\ \emptyset\rangle\},\ \emptyset\brangle\\
+\mbox{\textit{if condtion}}_{12} &:& \blangle\{\langle \ell_1,\ \{(checkpwd, \star), (>, \star)\}\rangle\},\ \emptyset\brangle\\
+\mbox{classTmp}_{13} &:& \blangle\{\langle \star,\ \emptyset\rangle\},\ \{\langle \ell_1,\ \{(checkpwd, \star), (>, \star)\}\rangle\}\brangle\\
+\mbox{\textit{leakInfo}}_{25} &:& \blangle\emptyset,\ \{\langle \ell_1,\ \{(checkpwd, \star), (assert, l_1)\}\rangle\}\brangle\\
+\end{array}
+$}
+\end{center}
+
+\subsubsection{Abstract Analysis}
+We assume a string abstraction $\langle NULL,\ \top \rangle$ and no abstraction for labels, as in the previous example.
+
+\begin{center}
+%\hskip-0.5cm
+{\footnotesize$
+\begin{array}{ccl}
+\mbox{userInputPassword}_{8} &:& \blangle\{\langle \star,\ \emptyset,\ \emptyset\rangle\},\ \emptyset\brangle\\
+\mbox{superSecure}_{9} &:& \blangle\{\langle \ell_1,\ \emptyset,\ \emptyset\rangle\},\ \emptyset\brangle\\
+\mbox{\textit{if condtion}}_{12} &:& \blangle\{\langle \ell_1,\ \{(checkpwd, \star), (>, \star)\}, \{(checkpwd, \star), (>, \star)\}\rangle\},\ \emptyset\brangle\\
+\mbox{classTmp}_{13,14} &:& \blangle\{\langle \star,\ \emptyset,\ \emptyset\rangle\},\ \{\langle \ell_1,\ \{(checkpwd, \star)\},\ \{(checkpwd, \star), (>, \star), (<, \star)\}\rangle\}\brangle\\
+\mbox{\textit{leakInfo}}_{25,31} &:& \blangle\emptyset,\ \{\langle \ell_1,\ \{(checkpwd, \star)\}\rangle\},\{\langle \ell_1,\ \{(checkpwd, \star), (>, \star), (<, \star)\}\rangle\}\brangle\\
+\end{array}
+$}
+\end{center}
+
+\subsubsection{Quantitative Analysis}
+In this example there is only a statement that generates implicit flow. This statement is the \texttt{if} where the password supplied by the user is compared to the one present in the datastore. This statement produces \emph{1 bit} of quantity of information:
+{\small \begin{align*}
+\begin{array}{ccl}
+\mbox{\textit{if condtion}}_{12} & : & \big \{ \blangle\{\langle \ell_1,\ \{(checkpwd, \star), (>, \star)\},\ \{(checkpwd, \star), (>, \star)\}\rangle\},\ \emptyset\brangle, \langle \ell_1, 1, 1 \rangle \big \}
+\end{array}
+\end{align*}}
+This value will remain the same in all the following \emph{qadexp}s.
+
+
+\section{Conclusions}
+
+In this paper we presented a framework able to analyse in a qualitative way both explicit and implicit flows. Moreover this framework is also capable of collecting quantities of information in the implicit flows, allowing a better modelling of the information release. Thanks to this design, the framework can support complex hybrid policies, that's to say policies that can grant both qualitative and quantitative threshold. It is clear that such features well represent the synthesis of the two different approaches, the qualitative and the quantitative one, bringing a new perspective in this research field.\\
+
+
+\begin{small}
+\bibliographystyle{abbrv}
+\bibliography{./new-bib}
+\end{small}
+
+\end{document} 
+\end{document}
